@@ -1,0 +1,13 @@
+{
+  "name": "helpdesk-backend",
+  "version": "1.0.0",
+  "description": "A simple helpdesk backend",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Lucas Castro",
+  "license": "ISC",
+  "type": "commonjs"
+}
