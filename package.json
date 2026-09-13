@@ -4,10 +4,30 @@
   "description": "A simple helpdesk backend",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsx --watch --env-file .env src/server.ts",
+    "test:dev": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll --runInBand",
+    "build": "tsup src --out-dir build --format esm --clean",
+    "start": "node build/server.js",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "Lucas Castro",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "module",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pg": "^8.23.0",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.5.1",
+    "@types/pg": "^8.23.1",
+    "prisma": "^7.10.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.23.13"
+  }
 }
