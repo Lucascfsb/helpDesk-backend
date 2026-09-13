@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  TECHNICIAN
+  CUSTOMER
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
+model User {
+  id             String   @id @default(uuid())
+  name           String
+  email          String   @unique
+  password       String
+  role           UserRole @default(CUSTOMER)
+  avatarUrl      String?  @map("avatar_url")
+  
+  availableHours String[] @default([]) @map("available_hours")
+
+  customerTickets   Ticket[] @relation("CustomerTickets")
+  technicianTickets Ticket[] @relation("TechnicianTickets")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Service {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  price       Decimal  @db.Decimal(10, 2)
+  
+  isActive    Boolean  @default(true) @map("is_active")
+
+  tickets TicketService[]
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+
+  @@map("services")
+}
+
+model Ticket {
+  id           String       @id @default(uuid())
+  status       TicketStatus @default(OPEN)
+  
+  customerId   String       @map("customer_id")
+  customer     User         @relation("CustomerTickets", fields: [customerId], references: [id], onDelete: Cascade)
+
+  technicianId String       @map("technician_id")
+  technician   User         @relation("TechnicianTickets", fields: [technicianId], references: [id])
+
+  services TicketService[]
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+
+  @@map("tickets")
+}
+
+model TicketService {
+  id        String  @id @default(uuid())
+  ticketId  String  @map("ticket_id")
+  serviceId String  @map("service_id")
+  
+  price     Decimal @db.Decimal(10, 2)
+
+  ticket  Ticket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([ticketId, serviceId])
+  @@map("ticket_services")
+}
