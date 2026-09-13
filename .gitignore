@@ -1,0 +1,31 @@
+# Dependências
+node_modules/
+
+# Variáveis de ambiente (Segurança)
+.env
+.env.local
+.env.*.local
+
+# Pasta de build de produção (gerada pelo tsup/tsc)
+build/
+dist/
+
+# Prisma & Logs
+/src/generated/prisma
+prisma/*.db
+prisma/*.db-journal
+*.log
+generated
+
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
+
+coverage/
+
+.DS_Store
+.vscode/
+.idea/
+
+/src/generated/prisma
