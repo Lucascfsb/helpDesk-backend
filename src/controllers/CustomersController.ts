@@ -10,7 +10,7 @@ export class CustomersController {
   async create(req: Request, res: Response) {
     const bodySchema = z.object({
       name: z.string().min(1, "Nome é obrigatório"),
-      email: z.string().email("E-mail inválido"),
+      email: z.email("E-mail inválido"),
       password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
     });
 
