@@ -9,14 +9,20 @@ export class ServicesController {
   async create(req: Request, res: Response) {
     const schema = z.object({
       title: z.string().min(1, "Título é obrigatório"),
-      description: z.string().min(1, "Descrição é obrigatória"),
+      description: z.string().optional(),
+      category: z.string().min(1, "Categoria é obrigatória"),
       price: z.number().positive("Preço deve ser maior que zero"),
     });
 
-    const { title, description, price } = schema.parse(req.body);
+    const { title, description, category, price } = schema.parse(req.body);
 
     const createService = new CreateService();
-    const service = await createService.execute({ title, description, price });
+    const service = await createService.execute({
+      title,
+      description,
+      category,
+      price,
+    });
 
     return res.status(201).json(service);
   }
@@ -29,10 +35,11 @@ export class ServicesController {
   }
 
   async update(req: Request, res: Response) {
-    const paramsSchema = z.object({ id: z.uuid() });
+    const paramsSchema = z.object({ id: z.string().uuid() });
     const bodySchema = z.object({
       title: z.string().optional(),
       description: z.string().optional(),
+      category: z.string().optional(),
       price: z.number().positive().optional(),
     });
 
@@ -46,7 +53,7 @@ export class ServicesController {
   }
 
   async delete(req: Request, res: Response) {
-    const paramsSchema = z.object({ id: z.uuid() });
+    const paramsSchema = z.object({ id: z.string().uuid() });
     const { id } = paramsSchema.parse(req.params);
 
     const softDeleteService = new SoftDeleteService();

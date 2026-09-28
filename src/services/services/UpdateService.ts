@@ -5,11 +5,12 @@ interface Request {
   id: string;
   title?: string;
   description?: string;
+  category?: string;
   price?: number;
 }
 
 export class UpdateService {
-  async execute({ id, title, description, price }: Request) {
+  async execute({ id, title, description, category, price }: Request) {
     const service = await prisma.service.findUnique({ where: { id } });
 
     if (!service) {
@@ -18,7 +19,7 @@ export class UpdateService {
 
     return prisma.service.update({
       where: { id },
-      data: { title, description, price },
+      data: { title, description, category, price },
     });
   }
 }
