@@ -3,6 +3,7 @@ import path from "path";
 import { prisma } from "@/database/prisma";
 import { AppError } from "@/utils/AppError";
 import { UPLOAD_CONFIG } from "@/configs/upload";
+import { fi } from "zod/locales";
 
 interface Request {
   userId: string;
@@ -22,12 +23,9 @@ export class UpdateUserAvatarService {
         UPLOAD_CONFIG.UPLOADS_FOLDER,
         user.avatarUrl,
       );
-      try {
-        await fs.promises.stat(userAvatarFilePath);
-        await fs.promises.unlink(userAvatarFilePath);
-      } catch {
-        // Arquivo antigo não existia localmente, segue o fluxo
-      }
+
+      await fs.promises.stat(userAvatarFilePath);
+      await fs.promises.unlink(userAvatarFilePath);
     }
 
     await fs.promises.rename(

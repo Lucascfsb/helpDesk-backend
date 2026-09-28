@@ -45,7 +45,7 @@ model Service {
   category    String  
   price       Decimal  @db.Decimal(10, 2)
   
-  isActive    Boolean  @default(true) @map("is_active") // Soft delete
+  isActive    Boolean  @default(true) @map("is_active")
 
   tickets TicketService[]
 

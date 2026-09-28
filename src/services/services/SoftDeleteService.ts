@@ -15,7 +15,7 @@ export class SoftDeleteService {
 
     return prisma.service.update({
       where: { id },
-      data: { active: false },
+      data: { isActive: false },
     });
   }
 }

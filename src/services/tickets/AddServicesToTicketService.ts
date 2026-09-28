@@ -34,7 +34,6 @@ export class AddServicesToTicketService {
       throw new AppError("Nenhum serviço válido foi selecionado.", 400);
     }
 
-    // Mapeia os dados incluindo o campo price obrigatório
     const ticketServicesData = services.map((service) => ({
       ticketId,
       serviceId: service.id,
