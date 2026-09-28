@@ -5,6 +5,7 @@ import { ListTechniciansService } from "@/services/technicians/ListTechniciansSe
 import { UpdateTechnicianService } from "@/services/technicians/UpdateTechnicianService";
 import { UpdateTechnicianPasswordService } from "@/services/technicians/UpdateTechnicianPasswordService";
 import { UpdateTechnicianAvailabilityService } from "@/services/technicians/UpdateTechnicianAvailabilityService";
+import { UpdateUserAvatarService } from "@/services/users/UpdateUserAvatarService";
 
 export class TechniciansController {
   async create(req: Request, res: Response) {
@@ -71,6 +72,19 @@ export class TechniciansController {
     await updatePasswordService.execute({ id, oldPassword, newPassword });
 
     return res.status(204).send();
+  }
+
+  async updateAvatar(req: Request, res: Response) {
+    const paramsSchema = z.object({ id: z.uuid() });
+    const { id } = paramsSchema.parse(req.params);
+
+    const updateUserAvatar = new UpdateUserAvatarService();
+    const technician = await updateUserAvatar.execute({
+      userId: id,
+      avatarFilename: req.file?.filename || "",
+    });
+
+    return res.json(technician);
   }
 
   async updateAvailability(req: Request, res: Response) {
