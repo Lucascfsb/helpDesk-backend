@@ -24,6 +24,7 @@ CREATE TABLE "services" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
+    "category" TEXT NOT NULL,
     "price" DECIMAL(10,2) NOT NULL,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -35,6 +36,9 @@ CREATE TABLE "services" (
 -- CreateTable
 CREATE TABLE "tickets" (
     "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "scheduled_at" TIMESTAMP(3) NOT NULL,
     "status" "TicketStatus" NOT NULL DEFAULT 'OPEN',
     "customer_id" TEXT NOT NULL,
     "technician_id" TEXT NOT NULL,
@@ -49,6 +53,7 @@ CREATE TABLE "ticket_services" (
     "id" TEXT NOT NULL,
     "ticket_id" TEXT NOT NULL,
     "service_id" TEXT NOT NULL,
+    "price" DECIMAL(10,2) NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "ticket_services_pkey" PRIMARY KEY ("id")
