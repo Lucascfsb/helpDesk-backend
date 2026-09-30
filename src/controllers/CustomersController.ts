@@ -34,17 +34,21 @@ export class CustomersController {
   }
 
   async update(req: Request, res: Response) {
-    const paramsSchema = z.object({ id: z.uuid() });
+    const paramsSchema = z.object({ id: z.string().uuid() });
     const bodySchema = z.object({
       name: z.string().min(1).optional(),
-      email: z.email().optional(),
+      email: z.string().email().optional(),
     });
 
     const { id } = paramsSchema.parse(req.params);
     const { name, email } = bodySchema.parse(req.body);
 
     const updateCustomerService = new UpdateCustomerService();
-    const customer = await updateCustomerService.execute({ id, name, email });
+    const customer = await updateCustomerService.execute({
+      id,
+      name,
+      email,
+    });
 
     return res.json(customer);
   }
@@ -60,15 +64,15 @@ export class CustomersController {
   }
 
   async updateAvatar(req: Request, res: Response) {
-    const paramsSchema = z.object({ id: z.uuid() });
+    const paramsSchema = z.object({ id: z.string().uuid() });
     const { id } = paramsSchema.parse(req.params);
 
-    const updateUserAvatarService = new UpdateUserAvatarService();
-    const user = await updateUserAvatarService.execute({
+    const updateUserAvatar = new UpdateUserAvatarService();
+    const customer = await updateUserAvatar.execute({
       userId: id,
       avatarFilename: req.file?.filename || "",
     });
 
-    return res.json(user);
+    return res.json(customer);
   }
 }
