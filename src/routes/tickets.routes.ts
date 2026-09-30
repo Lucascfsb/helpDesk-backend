@@ -8,16 +8,14 @@ const ticketsController = new TicketsController();
 
 ticketsRoutes.use(ensureAuthenticated);
 
+ticketsRoutes.post("/", ticketsController.create);
 ticketsRoutes.get("/", ticketsController.index);
 
-ticketsRoutes.post("/", verifyUserRole("CUSTOMER"), ticketsController.create);
-
 ticketsRoutes.patch(
-  "/:id/services",
+  "/:id/status",
+  verifyUserRole("ADMIN"),
   verifyUserRole("TECHNICIAN"),
-  ticketsController.addServices,
+  ticketsController.updateStatus,
 );
-
-ticketsRoutes.patch("/:id/status", ticketsController.updateStatus);
 
 export { ticketsRoutes };

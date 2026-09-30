@@ -77,20 +77,27 @@ export class TicketsController {
   }
 
   async updateStatus(req: Request, res: Response) {
-    const paramsSchema = z.object({ id: z.uuid() });
+    if (!req.user) {
+      throw new AppError("Utilizador não autenticado.", 401);
+    }
+
+    const paramsSchema = z.object({ id: z.string().uuid() });
     const bodySchema = z.object({
       status: z.enum(TicketStatus),
     });
 
     const { id: ticketId } = paramsSchema.parse(req.params);
     const { status } = bodySchema.parse(req.body);
+    const { id: userId, role: userRole } = req.user;
 
-    const updateStatusService = new UpdateTicketStatusService();
-    const updatedTicket = await updateStatusService.execute({
+    const updateTicketStatusService = new UpdateTicketStatusService();
+    const ticket = await updateTicketStatusService.execute({
       ticketId,
       status,
+      userId,
+      userRole,
     });
 
-    return res.json(updatedTicket);
+    return res.json(ticket);
   }
 }

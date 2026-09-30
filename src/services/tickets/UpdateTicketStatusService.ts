@@ -1,28 +1,36 @@
-import { TicketStatus } from "@prisma/client";
 import { prisma } from "@/database/prisma";
 import { AppError } from "@/utils/AppError";
+import { TicketStatus } from "@prisma/client";
 
 interface Request {
   ticketId: string;
   status: TicketStatus;
+  userId: string;
+  userRole: string;
 }
 
 export class UpdateTicketStatusService {
-  async execute({ ticketId, status }: Request) {
-    const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+  async execute({ ticketId, status, userId, userRole }: Request) {
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: ticketId },
+    });
 
     if (!ticket) {
       throw new AppError("Chamado não encontrado.", 404);
     }
 
-    return prisma.ticket.update({
+    if (userRole !== "ADMIN" && ticket.technicianId !== userId) {
+      throw new AppError(
+        "Acesso negado: Você só pode alterar o status dos chamados atribuídos a você.",
+        403,
+      );
+    }
+
+    const updatedTicket = await prisma.ticket.update({
       where: { id: ticketId },
       data: { status },
-      include: {
-        customer: { select: { id: true, name: true } },
-        technician: { select: { id: true, name: true } },
-        services: { include: { service: true } },
-      },
     });
+
+    return updatedTicket;
   }
 }
