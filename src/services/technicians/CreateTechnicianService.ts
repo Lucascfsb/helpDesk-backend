@@ -2,25 +2,15 @@ import { hash } from "bcryptjs";
 import { prisma } from "@/database/prisma";
 import { AppError } from "@/utils/AppError";
 
-const DEFAULT_AVAILABLE_HOURS = [
-  "08:00",
-  "09:00",
-  "10:00",
-  "11:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-];
-
 interface Request {
   name: string;
   email: string;
   password: string;
+  availableHours?: string[];
 }
 
 export class CreateTechnicianService {
-  async execute({ name, email, password }: Request) {
+  async execute({ name, email, password, availableHours }: Request) {
     const userWithSameEmail = await prisma.user.findUnique({
       where: { email },
     });
@@ -37,7 +27,10 @@ export class CreateTechnicianService {
         email,
         password: hashedPassword,
         role: "TECHNICIAN",
-        availableHours: DEFAULT_AVAILABLE_HOURS,
+        availableHours:
+          availableHours && availableHours.length > 0
+            ? availableHours
+            : ["08:00-12:00", "13:00-17:00"],
       },
     });
 

@@ -13,15 +13,19 @@ export class TechniciansController {
       name: z.string().min(1, "Nome é obrigatório"),
       email: z.email("E-mail inválido"),
       password: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
+      availableHours: z.array(z.string()).optional(),
     });
 
-    const { name, email, password } = bodySchema.parse(req.body);
+    const { name, email, password, availableHours } = bodySchema.parse(
+      req.body,
+    );
 
     const createTechnicianService = new CreateTechnicianService();
     const technician = await createTechnicianService.execute({
       name,
       email,
       password,
+      availableHours,
     });
 
     return res.status(201).json(technician);
