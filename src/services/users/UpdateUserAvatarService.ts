@@ -1,9 +1,8 @@
-import fs from "fs";
-import path from "path";
+import path from "node:path";
+import fs from "node:fs";
 import { prisma } from "@/database/prisma";
-import { AppError } from "@/utils/AppError";
 import { UPLOAD_CONFIG } from "@/configs/upload";
-import { fi } from "zod/locales";
+import { AppError } from "@/utils/AppError";
 
 interface Request {
   userId: string;
@@ -12,39 +11,40 @@ interface Request {
 
 export class UpdateUserAvatarService {
   async execute({ userId, avatarFilename }: Request) {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
 
     if (!user) {
       throw new AppError("Usuário não encontrado.", 404);
     }
 
     if (user.avatarUrl) {
-      const userAvatarFilePath = path.join(
+      const userAvatarFilePath = path.resolve(
         UPLOAD_CONFIG.UPLOADS_FOLDER,
         user.avatarUrl,
       );
 
-      await fs.promises.stat(userAvatarFilePath);
-      await fs.promises.unlink(userAvatarFilePath);
+      try {
+        await fs.promises.stat(userAvatarFilePath);
+        await fs.promises.unlink(userAvatarFilePath);
+      } catch {}
     }
 
-    await fs.promises.rename(
-      path.join(UPLOAD_CONFIG.TMP_FOLDER, avatarFilename),
-      path.join(UPLOAD_CONFIG.UPLOADS_FOLDER, avatarFilename),
+    const tmpFilePath = path.resolve(UPLOAD_CONFIG.TMP_FOLDER, avatarFilename);
+    const destFilePath = path.resolve(
+      UPLOAD_CONFIG.UPLOADS_FOLDER,
+      avatarFilename,
     );
+
+    await fs.promises.rename(tmpFilePath, destFilePath);
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { avatarUrl: avatarFilename },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        avatarUrl: true,
-      },
+      data: { avatar: avatarFilename },
     });
 
-    return updatedUser;
+    const { password: _, ...userWithoutPassword } = updatedUser;
+    return userWithoutPassword;
   }
 }

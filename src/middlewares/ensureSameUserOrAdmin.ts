@@ -3,19 +3,23 @@ import { AppError } from "@/utils/AppError";
 
 export function ensureSameUserOrAdmin(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ) {
   if (!req.user) {
     throw new AppError("Usuário não autenticado.", 401);
   }
 
-  const { id } = req.params;
-  const { id: userId, role } = req.user;
+  const { id: authenticatedUserId, role } = req.user;
+  const { id: targetUserId } = req.params;
 
-  if (role !== "ADMIN" && id !== userId) {
+  if (role === "ADMIN") {
+    return next();
+  }
+
+  if (authenticatedUserId !== targetUserId) {
     throw new AppError(
-      "Acesso negado: Você não tem permissão para alterar os dados deste usuário.",
+      "Acesso negado: você não tem permissão para alterar dados de outro usuário.",
       403,
     );
   }

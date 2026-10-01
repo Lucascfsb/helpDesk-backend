@@ -17,6 +17,7 @@ customersRoutes.use(ensureAuthenticated);
 customersRoutes.get("/", verifyUserRole("ADMIN"), customersController.index);
 
 customersRoutes.put("/:id", ensureSameUserOrAdmin, customersController.update);
+
 customersRoutes.patch(
   "/:id/avatar",
   ensureSameUserOrAdmin,

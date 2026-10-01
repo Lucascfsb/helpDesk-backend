@@ -1,22 +1,33 @@
-import { hash } from "bcryptjs";
 import { prisma } from "@/database/prisma";
+import { hash } from "bcryptjs";
 import { AppError } from "@/utils/AppError";
 
 interface Request {
   name: string;
   email: string;
   password: string;
-  availableHours?: string[];
+  specialty: string;
+  workDays?: string[];
+  workStartHour?: string;
+  workEndHour?: string;
 }
 
 export class CreateTechnicianService {
-  async execute({ name, email, password, availableHours }: Request) {
+  async execute({
+    name,
+    email,
+    password,
+    specialty,
+    workDays,
+    workStartHour,
+    workEndHour,
+  }: Request) {
     const userWithSameEmail = await prisma.user.findUnique({
       where: { email },
     });
 
     if (userWithSameEmail) {
-      throw new AppError("E-mail já está em uso.");
+      throw new AppError("Este e-mail já está em uso.");
     }
 
     const hashedPassword = await hash(password, 8);
@@ -27,10 +38,10 @@ export class CreateTechnicianService {
         email,
         password: hashedPassword,
         role: "TECHNICIAN",
-        availableHours:
-          availableHours && availableHours.length > 0
-            ? availableHours
-            : ["08:00-12:00", "13:00-17:00"],
+        specialty,
+        workDays: workDays ?? ["MON", "TUE", "WED", "THU", "FRI"],
+        workStartHour: workStartHour ?? "08:00",
+        workEndHour: workEndHour ?? "18:00",
       },
     });
 

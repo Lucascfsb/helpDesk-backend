@@ -3,37 +3,28 @@ import multer from "multer";
 import { UPLOAD_CONFIG } from "@/configs/upload";
 import { TechniciansController } from "@/controllers/TechniciansController";
 import { ensureAuthenticated } from "@/middlewares/ensureAuthenticated";
-import { verifyUserRole } from "@/middlewares/verifyUserRole";
 import { ensureSameUserOrAdmin } from "@/middlewares/ensureSameUserOrAdmin";
+import { verifyUserRole } from "@/middlewares/verifyUserRole";
 
 const techniciansRoutes = Router();
 const techniciansController = new TechniciansController();
 const upload = multer(UPLOAD_CONFIG.MULTER);
 
-techniciansRoutes.use(ensureAuthenticated);
-
 techniciansRoutes.post(
   "/",
+  ensureAuthenticated,
   verifyUserRole("ADMIN"),
   techniciansController.create,
 );
 
-techniciansRoutes.get(
-  "/",
-  verifyUserRole("ADMIN"),
-  techniciansController.index,
-);
+techniciansRoutes.get("/", techniciansController.index);
+
+techniciansRoutes.use(ensureAuthenticated);
 
 techniciansRoutes.put(
   "/:id",
   ensureSameUserOrAdmin,
   techniciansController.update,
-);
-
-techniciansRoutes.patch(
-  "/:id/password",
-  ensureSameUserOrAdmin,
-  techniciansController.updatePassword,
 );
 
 techniciansRoutes.patch(

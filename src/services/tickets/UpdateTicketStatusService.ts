@@ -1,6 +1,6 @@
+import { TicketStatus } from "@prisma/client";
 import { prisma } from "@/database/prisma";
 import { AppError } from "@/utils/AppError";
-import { TicketStatus } from "@prisma/client";
 
 interface Request {
   ticketId: string;
@@ -21,7 +21,7 @@ export class UpdateTicketStatusService {
 
     if (userRole !== "ADMIN" && ticket.technicianId !== userId) {
       throw new AppError(
-        "Acesso negado: Você só pode alterar o status dos chamados atribuídos a você.",
+        "Acesso negado: Você só pode alterar o status de chamados atribuídos a você.",
         403,
       );
     }
