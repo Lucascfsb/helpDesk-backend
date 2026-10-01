@@ -41,7 +41,9 @@ export class UpdateUserAvatarService {
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { avatar: avatarFilename },
+      data: {
+        avatarUrl: avatarFilename,
+      },
     });
 
     const { password: _, ...userWithoutPassword } = updatedUser;

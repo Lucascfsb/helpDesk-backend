@@ -8,6 +8,7 @@ interface Request {
   customerId: string;
   technicianId: string;
   serviceIds: string[];
+  userRole?: string;
 }
 
 export class CreateTicketService {
@@ -18,7 +19,14 @@ export class CreateTicketService {
     customerId,
     technicianId,
     serviceIds,
+    userRole,
   }: Request) {
+    if (userRole === "TECHNICIAN") {
+      throw new AppError(
+        "Técnicos não têm permissão para criar chamados.",
+        403,
+      );
+    }
     const technician = await prisma.user.findFirst({
       where: { id: technicianId, role: "TECHNICIAN" },
     });

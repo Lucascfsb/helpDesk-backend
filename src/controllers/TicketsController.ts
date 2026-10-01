@@ -4,15 +4,16 @@ import { CreateTicketService } from "@/services/tickets/CreateTicketService";
 import { AddServiceToTicketService } from "@/services/tickets/AddServicesToTicketService";
 import { UpdateTicketStatusService } from "@/services/tickets/UpdateTicketStatusService";
 import { ListTicketsService } from "@/services/tickets/ListTicketsService";
+import { prisma } from "@/database/prisma";
 
 export class TicketsController {
   async create(req: Request, res: Response) {
     const bodySchema = z.object({
       title: z.string().min(1),
       description: z.string().optional(),
-      scheduledAt: z.iso.datetime(),
-      technicianId: z.uuid(),
-      serviceIds: z.array(z.uuid()).min(1),
+      scheduledAt: z.string().datetime(),
+      technicianId: z.string().uuid(),
+      serviceIds: z.array(z.string().uuid()).min(1),
     });
 
     const { title, description, scheduledAt, technicianId, serviceIds } =
@@ -28,6 +29,7 @@ export class TicketsController {
       customerId,
       technicianId,
       serviceIds,
+      userRole: req.user.role,
     });
 
     return res.status(201).json(ticket);
@@ -44,23 +46,40 @@ export class TicketsController {
   }
 
   async addService(req: Request, res: Response) {
-    const paramsSchema = z.object({ id: z.uuid() });
-    const bodySchema = z.object({ serviceId: z.uuid() });
+    const paramsSchema = z.object({ id: z.string().uuid() });
 
-    const { id: ticketId } = paramsSchema.parse(req.params);
-    const { serviceId } = bodySchema.parse(req.body);
-
-    const addServiceToTicketService = new AddServiceToTicketService();
-    const updatedTicketService = await addServiceToTicketService.execute({
-      ticketId,
-      serviceId,
+    const bodySchema = z.object({
+      serviceId: z.string().uuid().optional(),
+      serviceIds: z.array(z.string().uuid()).optional(),
     });
 
-    return res.status(201).json(updatedTicketService);
+    const { id: ticketId } = paramsSchema.parse(req.params);
+    const { serviceId, serviceIds } = bodySchema.parse(req.body);
+
+    const targetServiceIds = serviceIds || (serviceId ? [serviceId] : []);
+
+    const addServiceToTicketService = new AddServiceToTicketService();
+
+    for (const sId of targetServiceIds) {
+      await addServiceToTicketService.execute({ ticketId, serviceId: sId });
+    }
+
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: ticketId },
+      include: {
+        services: { include: { service: true } },
+      },
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ message: "Chamado não encontrado." });
+    }
+
+    return res.status(200).json(ticket);
   }
 
   async updateStatus(req: Request, res: Response) {
-    const paramsSchema = z.object({ id: z.uuid() });
+    const paramsSchema = z.object({ id: z.string().uuid() });
     const bodySchema = z.object({
       status: z.enum(["OPEN", "IN_PROGRESS", "CLOSED"]),
     });
