@@ -12,7 +12,12 @@
     },
     "types": [
       "jest",
-      "node"
+      "node",
+      "express"
+    ],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/@types"
     ],
     "module": "commonjs",
     "esModuleInterop": true,

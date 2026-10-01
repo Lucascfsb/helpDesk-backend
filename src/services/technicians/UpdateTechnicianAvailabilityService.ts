@@ -8,23 +8,20 @@ interface Request {
 
 export class UpdateTechnicianAvailabilityService {
   async execute({ id, availableHours }: Request) {
-    const technician = await prisma.user.findFirst({
-      where: { id, role: "TECHNICIAN" },
+    const technician = await prisma.user.findUnique({
+      where: { id },
     });
 
-    if (!technician) {
+    if (!technician || technician.role !== "TECHNICIAN") {
       throw new AppError("Técnico não encontrado.", 404);
     }
 
-    return prisma.user.update({
+    const updatedTechnician = await prisma.user.update({
       where: { id },
       data: { availableHours },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        availableHours: true,
-      },
     });
+
+    const { password: _, ...technicianWithoutPassword } = updatedTechnician;
+    return technicianWithoutPassword;
   }
 }

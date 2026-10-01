@@ -6,22 +6,11 @@ interface Request {
   name: string;
   email: string;
   password: string;
-  specialty: string;
-  workDays?: string[];
-  workStartHour?: string;
-  workEndHour?: string;
+  availableHours?: string[];
 }
 
 export class CreateTechnicianService {
-  async execute({
-    name,
-    email,
-    password,
-    specialty,
-    workDays,
-    workStartHour,
-    workEndHour,
-  }: Request) {
+  async execute({ name, email, password, availableHours }: Request) {
     const userWithSameEmail = await prisma.user.findUnique({
       where: { email },
     });
@@ -32,16 +21,27 @@ export class CreateTechnicianService {
 
     const hashedPassword = await hash(password, 8);
 
+    const defaultAvailableHours = [
+      "08:00",
+      "09:00",
+      "10:00",
+      "11:00",
+      "14:00",
+      "15:00",
+      "16:00",
+      "17:00",
+    ];
+
     const technician = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
         role: "TECHNICIAN",
-        specialty,
-        workDays: workDays ?? ["MON", "TUE", "WED", "THU", "FRI"],
-        workStartHour: workStartHour ?? "08:00",
-        workEndHour: workEndHour ?? "18:00",
+        availableHours:
+          availableHours && availableHours.length > 0
+            ? availableHours
+            : defaultAvailableHours,
       },
     });
 

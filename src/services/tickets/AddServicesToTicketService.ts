@@ -3,13 +3,11 @@ import { AppError } from "@/utils/AppError";
 
 interface Request {
   ticketId: string;
-  technicianId: string;
-  userRole?: string;
-  serviceIds: string[];
+  serviceId: string;
 }
 
-export class AddServicesToTicketService {
-  async execute({ ticketId, technicianId, serviceIds, userRole }: Request) {
+export class AddServiceToTicketService {
+  async execute({ ticketId, serviceId }: Request) {
     const ticket = await prisma.ticket.findUnique({
       where: { id: ticketId },
     });
@@ -18,44 +16,38 @@ export class AddServicesToTicketService {
       throw new AppError("Chamado não encontrado.", 404);
     }
 
-    if (userRole !== "ADMIN" && ticket.technicianId !== technicianId) {
-      throw new AppError(
-        "Acesso negado: Você só pode adicionar serviços aos chamados atribuídos a você.",
-        403,
-      );
+    const service = await prisma.service.findUnique({
+      where: { id: serviceId },
+    });
+
+    if (!service || !service.isActive) {
+      throw new AppError("Serviço não encontrado ou inativo.", 400);
     }
 
-    if (ticket.technicianId !== technicianId) {
-      throw new AppError(
-        "Apenas o técnico responsável pode alterar este chamado.",
-        403,
-      );
-    }
-
-    const services = await prisma.service.findMany({
+    const ticketServiceExists = await prisma.ticketService.findUnique({
       where: {
-        id: { in: serviceIds },
+        ticketId_serviceId: {
+          ticketId,
+          serviceId,
+        },
       },
     });
 
-    if (services.length === 0) {
-      throw new AppError("Nenhum serviço válido foi selecionado.", 400);
+    if (ticketServiceExists) {
+      throw new AppError("Este serviço já está vinculado a este chamado.");
     }
 
-    const ticketServicesData = services.map((service) => ({
-      ticketId,
-      serviceId: service.id,
-      price: service.price,
-    }));
-
-    await prisma.ticketService.createMany({
-      data: ticketServicesData,
-      skipDuplicates: true,
+    const ticketService = await prisma.ticketService.create({
+      data: {
+        ticketId,
+        serviceId,
+        price: service.price,
+      },
+      include: {
+        service: true,
+      },
     });
 
-    return prisma.ticket.findUnique({
-      where: { id: ticketId },
-      include: { services: { include: { service: true } } },
-    });
+    return ticketService;
   }
 }

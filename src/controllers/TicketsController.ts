@@ -1,28 +1,22 @@
 import { Request, Response } from "express";
 import { z } from "zod";
-import { TicketStatus } from "@prisma/client";
 import { CreateTicketService } from "@/services/tickets/CreateTicketService";
-import { ListTicketsService } from "@/services/tickets/ListTicketsService";
-import { AddServicesToTicketService } from "@/services/tickets/AddServicesToTicketService";
+import { AddServiceToTicketService } from "@/services/tickets/AddServicesToTicketService";
 import { UpdateTicketStatusService } from "@/services/tickets/UpdateTicketStatusService";
-import { AppError } from "@/utils/AppError";
+import { ListTicketsService } from "@/services/tickets/ListTicketsService";
 
 export class TicketsController {
   async create(req: Request, res: Response) {
-    if (!req.user) {
-      throw new AppError("Utilizador não autenticado.", 401);
-    }
-
-    const schema = z.object({
-      title: z.string().min(1, "Título é obrigatório"),
+    const bodySchema = z.object({
+      title: z.string().min(1),
       description: z.string().optional(),
-      scheduledAt: z.iso.datetime().or(z.string().min(1)),
-      technicianId: z.uuid("ID do técnico inválido"),
-      serviceIds: z.array(z.uuid()).min(1, "Selecione pelo menos um serviço"),
+      scheduledAt: z.iso.datetime(),
+      technicianId: z.uuid(),
+      serviceIds: z.array(z.uuid()).min(1),
     });
 
     const { title, description, scheduledAt, technicianId, serviceIds } =
-      schema.parse(req.body);
+      bodySchema.parse(req.body);
 
     const customerId = req.user.id;
 
@@ -40,65 +34,48 @@ export class TicketsController {
   }
 
   async index(req: Request, res: Response) {
-    if (!req.user) {
-      throw new AppError("Utilizador não autenticado.", 401);
-    }
-
-    const { id: userId, role: userRole } = req.user;
-
     const listTicketsService = new ListTicketsService();
-    const tickets = await listTicketsService.execute({ userId, userRole });
+    const tickets = await listTicketsService.execute({
+      userId: req.user.id,
+      userRole: req.user.role,
+    });
 
     return res.json(tickets);
   }
 
-  async addServices(req: Request, res: Response) {
-    if (!req.user) {
-      throw new AppError("Utilizador não autenticado.", 401);
-    }
-
-    const paramsSchema = z.object({ id: z.string().uuid() });
-    const bodySchema = z.object({
-      serviceIds: z.array(z.uuid()).min(1),
-    });
+  async addService(req: Request, res: Response) {
+    const paramsSchema = z.object({ id: z.uuid() });
+    const bodySchema = z.object({ serviceId: z.uuid() });
 
     const { id: ticketId } = paramsSchema.parse(req.params);
-    const { serviceIds } = bodySchema.parse(req.body);
-    const { id: technicianId, role: userRole } = req.user;
+    const { serviceId } = bodySchema.parse(req.body);
 
-    const addServicesService = new AddServicesToTicketService();
-    const updatedTicket = await addServicesService.execute({
+    const addServiceToTicketService = new AddServiceToTicketService();
+    const updatedTicketService = await addServiceToTicketService.execute({
       ticketId,
-      technicianId,
-      serviceIds,
-      userRole,
+      serviceId,
     });
 
-    return res.json(updatedTicket);
+    return res.status(201).json(updatedTicketService);
   }
 
   async updateStatus(req: Request, res: Response) {
-    if (!req.user) {
-      throw new AppError("Utilizador não autenticado.", 401);
-    }
-
-    const paramsSchema = z.object({ id: z.string().uuid() });
+    const paramsSchema = z.object({ id: z.uuid() });
     const bodySchema = z.object({
-      status: z.enum(TicketStatus),
+      status: z.enum(["OPEN", "IN_PROGRESS", "CLOSED"]),
     });
 
-    const { id: ticketId } = paramsSchema.parse(req.params);
+    const { id } = paramsSchema.parse(req.params);
     const { status } = bodySchema.parse(req.body);
-    const { id: userId, role: userRole } = req.user;
 
     const updateTicketStatusService = new UpdateTicketStatusService();
-    const ticket = await updateTicketStatusService.execute({
-      ticketId,
+    const updatedTicket = await updateTicketStatusService.execute({
+      ticketId: id,
       status,
-      userId,
-      userRole,
+      userId: req.user.id,
+      userRole: req.user.role,
     });
 
-    return res.json(ticket);
+    return res.json(updatedTicket);
   }
 }
