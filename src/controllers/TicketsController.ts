@@ -64,13 +64,14 @@ export class TicketsController {
 
     const { id: ticketId } = paramsSchema.parse(req.params);
     const { serviceIds } = bodySchema.parse(req.body);
-    const technicianId = req.user.id;
+    const { id: technicianId, role: userRole } = req.user;
 
     const addServicesService = new AddServicesToTicketService();
     const updatedTicket = await addServicesService.execute({
       ticketId,
       technicianId,
       serviceIds,
+      userRole,
     });
 
     return res.json(updatedTicket);

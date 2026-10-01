@@ -10,3 +10,19 @@ services:
       POSTGRES_DB: helpdesk-api
     ports:
       - "5432:5432"
+    volumes:
+      - pgdata:/bitnami/postgresql
+
+  api:
+    build: .
+    container_name: helpdesk_api
+    restart: always
+    ports:
+      - "3333:3333"
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/helpdesk-api?schema=public"
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:

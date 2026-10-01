@@ -4,17 +4,25 @@ import { AppError } from "@/utils/AppError";
 interface Request {
   ticketId: string;
   technicianId: string;
+  userRole?: string;
   serviceIds: string[];
 }
 
 export class AddServicesToTicketService {
-  async execute({ ticketId, technicianId, serviceIds }: Request) {
+  async execute({ ticketId, technicianId, serviceIds, userRole }: Request) {
     const ticket = await prisma.ticket.findUnique({
       where: { id: ticketId },
     });
 
     if (!ticket) {
       throw new AppError("Chamado não encontrado.", 404);
+    }
+
+    if (userRole !== "ADMIN" && ticket.technicianId !== technicianId) {
+      throw new AppError(
+        "Acesso negado: Você só pode adicionar serviços aos chamados atribuídos a você.",
+        403,
+      );
     }
 
     if (ticket.technicianId !== technicianId) {
