@@ -9,6 +9,9 @@ RUN npm install
 
 COPY . .
 
+ENV DATABASE_URL="postgresql://user:pass@localhost:5432/db" 
+# Valor fictício
+
 RUN npx prisma generate
 RUN npm run build
 
