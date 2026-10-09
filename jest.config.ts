@@ -12,6 +12,11 @@ const config: Config.InitialOptions = {
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
   },
+  coveragePathIgnorePatterns: [
+    "/node_modules/",
+    "/src/generated/",
+    "/src/database/",
+  ],
 };
 
 export default config;

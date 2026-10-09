@@ -404,17 +404,26 @@ describe("Módulo de Usuários (Admin, Técnico, Cliente)", () => {
   });
 
   it("Deve testar a atualização de avatar do usuário com e sem arquivo", async () => {
-    const resNoFile = await request(app)
-      .patch("/technicians/avatar")
-      .set("Authorization", `Bearer ${adminToken}`);
+    // 1. Cadastra um técnico para pegar o ID correto
+    const techEmail = `tech.avatar.${Date.now()}@teste.com`;
+    const createRes = await request(app)
+      .post("/technicians")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        name: "Técnico Avatar",
+        email: techEmail,
+        password: "123456_SenhaSecreta",
+        availableHours: ["08:00"],
+      });
 
-    expect([400, 500]).toContain(resNoFile.status);
+    const techId = createRes.body.id;
 
+    // 2. Enviando um arquivo falso de avatar com o ID correto na URL
     const resWithFile = await request(app)
-      .patch("/technicians/avatar")
+      .patch(`/technicians/${techId}/avatar`)
       .set("Authorization", `Bearer ${adminToken}`)
       .attach("avatar", Buffer.from("conteudo_imagem_fake"), "avatar.jpg");
 
-    expect([200, 204, 400]).toContain(resWithFile.status);
+    expect([200, 204]).toContain(resWithFile.status);
   });
 });
