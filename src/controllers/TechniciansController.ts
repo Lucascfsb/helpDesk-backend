@@ -11,7 +11,7 @@ export class TechniciansController {
   async create(req: Request, res: Response) {
     const bodySchema = z.object({
       name: z.string().min(1),
-      email: z.string().email(),
+      email: z.email(),
       password: z.string().min(6),
       availableHours: z.array(z.string()).optional(),
     });
@@ -42,7 +42,7 @@ export class TechniciansController {
     const paramsSchema = z.object({ id: z.string().uuid() });
     const bodySchema = z.object({
       name: z.string().min(1).optional(),
-      email: z.string().email().optional(),
+      email: z.email().optional(),
     });
 
     const { id } = paramsSchema.parse(req.params);

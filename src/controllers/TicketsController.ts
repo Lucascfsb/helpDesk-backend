@@ -11,9 +11,9 @@ export class TicketsController {
     const bodySchema = z.object({
       title: z.string().min(1),
       description: z.string().optional(),
-      scheduledAt: z.string().datetime(),
-      technicianId: z.string().uuid(),
-      serviceIds: z.array(z.string().uuid()).min(1),
+      scheduledAt: z.iso.datetime(),
+      technicianId: z.uuid(),
+      serviceIds: z.array(z.uuid()).min(1),
     });
 
     const { title, description, scheduledAt, technicianId, serviceIds } =
@@ -46,11 +46,11 @@ export class TicketsController {
   }
 
   async addService(req: Request, res: Response) {
-    const paramsSchema = z.object({ id: z.string().uuid() });
+    const paramsSchema = z.object({ id: z.uuid() });
 
     const bodySchema = z.object({
-      serviceId: z.string().uuid().optional(),
-      serviceIds: z.array(z.string().uuid()).optional(),
+      serviceId: z.uuid().optional(),
+      serviceIds: z.array(z.uuid()).optional(),
     });
 
     const { id: ticketId } = paramsSchema.parse(req.params);
@@ -79,7 +79,7 @@ export class TicketsController {
   }
 
   async updateStatus(req: Request, res: Response) {
-    const paramsSchema = z.object({ id: z.string().uuid() });
+    const paramsSchema = z.object({ id: z.uuid() });
     const bodySchema = z.object({
       status: z.enum(["OPEN", "IN_PROGRESS", "CLOSED"]),
     });
