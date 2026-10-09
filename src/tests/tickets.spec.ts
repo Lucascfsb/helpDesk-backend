@@ -153,4 +153,59 @@ describe("Módulo de Chamados (Tickets)", () => {
     expect(response.status).toBe(200);
     expect(response.body.services.length).toBe(2);
   });
+
+  it("Não deve criar chamado se o técnico não existir", async () => {
+    const response = await request(app)
+      .post("/tickets")
+      .set("Authorization", `Bearer ${customerToken}`)
+      .send({
+        title: "Sem Técnico",
+        scheduledAt: "2026-10-15T09:00:00.000Z",
+        technicianId: "00000000-0000-0000-0000-000000000000",
+        serviceIds: [serviceId],
+      });
+
+    expect(response.status).toBe(400);
+  });
+
+  it("Não deve alterar status de chamado inexistente", async () => {
+    const response = await request(app)
+      .patch("/tickets/00000000-0000-0000-0000-000000000000/status")
+      .set("Authorization", `Bearer ${technicianToken}`)
+      .send({ status: "CLOSED" });
+
+    expect(response.status).toBe(404);
+  });
+
+  it("Não deve adicionar serviço a um chamado inexistente", async () => {
+    const response = await request(app)
+      .patch("/tickets/00000000-0000-0000-0000-000000000000/services")
+      .set("Authorization", `Bearer ${technicianToken}`)
+      .send({ serviceIds: [serviceId] });
+
+    expect(response.status).toBe(404);
+  });
+
+  it("Não deve criar chamado se algum dos serviços informados não existir", async () => {
+    const response = await request(app)
+      .post("/tickets")
+      .set("Authorization", `Bearer ${customerToken}`)
+      .send({
+        title: "Chamado Serviço Inexistente",
+        scheduledAt: "2026-10-15T09:00:00.000Z",
+        technicianId,
+        serviceIds: ["00000000-0000-0000-0000-000000000000"],
+      });
+
+    expect(response.status).toBe(400);
+  });
+
+  it("Não deve adicionar serviço inexistente a um chamado", async () => {
+    const response = await request(app)
+      .patch(`/tickets/${ticketId}/services`)
+      .set("Authorization", `Bearer ${technicianToken}`)
+      .send({ serviceIds: ["00000000-0000-0000-0000-000000000000"] });
+
+    expect(response.status).toBe(400);
+  });
 });

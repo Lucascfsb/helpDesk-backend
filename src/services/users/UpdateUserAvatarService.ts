@@ -11,6 +11,10 @@ interface Request {
 
 export class UpdateUserAvatarService {
   async execute({ userId, avatarFilename }: Request) {
+    if (!avatarFilename) {
+      throw new AppError("Arquivo de avatar não fornecido.", 400);
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });

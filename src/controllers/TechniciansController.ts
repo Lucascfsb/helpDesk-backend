@@ -39,7 +39,7 @@ export class TechniciansController {
   }
 
   async update(req: Request, res: Response) {
-    const paramsSchema = z.object({ id: z.string().uuid() });
+    const paramsSchema = z.object({ id: z.uuid() });
     const bodySchema = z.object({
       name: z.string().min(1).optional(),
       email: z.email().optional(),
@@ -59,13 +59,13 @@ export class TechniciansController {
   }
 
   async updatePassword(req: Request, res: Response) {
-    const paramsSchema = z.object({ id: z.string().uuid() });
+    const paramsSchema = z.object({ id: z.uuid() });
     const bodySchema = z.object({
       oldPassword: z.string(),
       newPassword: z.string().min(6),
     });
 
-    const { id } = paramsSchema.parse(req.params);
+    const id = req.user.id;
     const { oldPassword, newPassword } = bodySchema.parse(req.body);
 
     const updatePasswordService = new UpdateTechnicianPasswordService();
@@ -75,7 +75,7 @@ export class TechniciansController {
   }
 
   async updateAvatar(req: Request, res: Response) {
-    const paramsSchema = z.object({ id: z.string().uuid() });
+    const paramsSchema = z.object({ id: z.uuid() });
     const { id } = paramsSchema.parse(req.params);
 
     const updateUserAvatar = new UpdateUserAvatarService();
@@ -88,7 +88,7 @@ export class TechniciansController {
   }
 
   async updateAvailability(req: Request, res: Response) {
-    const paramsSchema = z.object({ id: z.string().uuid() });
+    const paramsSchema = z.object({ id: z.uuid() });
     const bodySchema = z.object({
       availableHours: z.array(z.string()),
     });

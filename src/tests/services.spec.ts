@@ -78,6 +78,36 @@ describe("Módulo de Serviços", () => {
     expect(response.body.length).toBeGreaterThan(0);
   });
 
+  it("Admin deve atualizar um serviço existente", async () => {
+    const response = await request(app)
+      .put(`/services/${createdServiceId}`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        title: "Manutenção Preventiva de Hardware",
+        description: "Troca de pasta térmica, peças e limpeza completa",
+        category: "Hardware",
+        price: 250,
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body.title).toBe("Manutenção Preventiva de Hardware");
+    expect(response.body.price).toBe("250");
+  });
+
+  it("Não deve atualizar um serviço inexistente", async () => {
+    const response = await request(app)
+      .put("/services/00000000-0000-0000-0000-000000000000")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        title: "Serviço Fantasma",
+        description: "Teste de erro",
+        category: "Software",
+        price: 100,
+      });
+
+    expect(response.status).toBe(404);
+  });
+
   it("Admin deve aplicar Soft Delete em um serviço", async () => {
     const response = await request(app)
       .delete(`/services/${createdServiceId}`)
@@ -89,5 +119,13 @@ describe("Módulo de Serviços", () => {
       where: { id: createdServiceId },
     });
     expect(serviceInDb?.isActive).toBe(false);
+  });
+
+  it("Não deve aplicar Soft Delete em um serviço inexistente", async () => {
+    const response = await request(app)
+      .delete("/services/00000000-0000-0000-0000-000000000000")
+      .set("Authorization", `Bearer ${adminToken}`);
+
+    expect(response.status).toBe(404);
   });
 });

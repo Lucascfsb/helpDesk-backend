@@ -40,4 +40,11 @@ techniciansRoutes.patch(
   techniciansController.updateAvatar,
 );
 
+techniciansRoutes.patch(
+  "/password",
+  ensureAuthenticated,
+  verifyUserRole(["TECHNICIAN"]),
+  techniciansController.updatePassword,
+);
+
 export { techniciansRoutes };
